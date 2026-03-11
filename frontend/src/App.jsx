@@ -7,7 +7,6 @@ import ProtectedRoute from './components/ProtectedRoute';
 // Layouts
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
-import AdminLayout from './layouts/AdminLayout';
 
 // Public Pages
 import Home from './pages/public/Home';
@@ -22,12 +21,6 @@ import Payment from './pages/user/Payment';
 import Profile from './pages/user/Profile';
 import BookingHistory from './pages/user/BookingHistory';
 
-// Admin Pages
-import AdminDashboard from './pages/admin/AdminDashboard';
-import EventForm from './pages/admin/EventForm';
-import EventList from './pages/admin/EventList';
-import AdminUsers from './pages/admin/AdminUsers';
-
 function App() {
   return (
     <BrowserRouter>
@@ -39,23 +32,6 @@ function App() {
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-              </Route>
-
-              {/* Admin Layout - Protected */}
-              <Route
-                element={
-                  <ProtectedRoute requiredRole="admin">
-                    <AdminLayout />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/admin" element={<AdminDashboard />} />
-                <Route path="/admin/events" element={<EventList />} />
-                <Route path="/admin/events/new" element={<EventForm />} />
-                <Route path="/admin/events/edit/:id" element={<EventForm />} />
-                <Route path="/admin/users" element={<AdminUsers />} />
-                <Route path="/admin/analytics" element={<AdminDashboard />} />
-                <Route path="/admin/revenue" element={<AdminDashboard />} />
               </Route>
 
               {/* Main Layout */}

@@ -1,8 +1,36 @@
 const express = require('express');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
 const Event = require('../models/Event');
 const { auth, adminOnly } = require('../middleware/auth');
 
 const router = express.Router();
+
+// Multer configuration for image uploads
+const uploadDir = path.join(__dirname, '..', 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, uploadDir),
+    filename: (req, file, cb) => {
+        const uniqueName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`;
+        cb(null, uniqueName);
+    },
+});
+
+const fileFilter = (req, file, cb) => {
+    const allowed = ['image/png', 'image/jpeg', 'image/jpg'];
+    if (allowed.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only PNG, JPEG, and JPG images are allowed'), false);
+    }
+};
+
+const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 // GET /api/events - List events with optional filters
 router.get('/', async (req, res) => {
@@ -84,9 +112,25 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /api/events - Admin only
-router.post('/', auth, adminOnly, async (req, res) => {
+router.post('/', auth, adminOnly, upload.single('image'), async (req, res) => {
     try {
-        const event = new Event(req.body);
+        const data = { ...req.body };
+        if (req.file) {
+            data.image = `/uploads/${req.file.filename}`;
+        }
+        // Parse tickets if sent as JSON string (from FormData)
+        if (typeof data.tickets === 'string') {
+            data.tickets = JSON.parse(data.tickets);
+        }
+        // Parse tags if sent as JSON string
+        if (typeof data.tags === 'string') {
+            try { data.tags = JSON.parse(data.tags); } catch { data.tags = data.tags.split(',').map(t => t.trim()).filter(Boolean); }
+        }
+        // Parse boolean
+        if (typeof data.featured === 'string') {
+            data.featured = data.featured === 'true';
+        }
+        const event = new Event(data);
         await event.save();
         res.status(201).json(event);
     } catch (error) {
@@ -95,11 +139,27 @@ router.post('/', auth, adminOnly, async (req, res) => {
 });
 
 // PUT /api/events/:id - Admin only
-router.put('/:id', auth, adminOnly, async (req, res) => {
+router.put('/:id', auth, adminOnly, upload.single('image'), async (req, res) => {
     try {
+        const data = { ...req.body };
+        if (req.file) {
+            data.image = `/uploads/${req.file.filename}`;
+        }
+        // Parse tickets if sent as JSON string (from FormData)
+        if (typeof data.tickets === 'string') {
+            data.tickets = JSON.parse(data.tickets);
+        }
+        // Parse tags if sent as JSON string
+        if (typeof data.tags === 'string') {
+            try { data.tags = JSON.parse(data.tags); } catch { data.tags = data.tags.split(',').map(t => t.trim()).filter(Boolean); }
+        }
+        // Parse boolean
+        if (typeof data.featured === 'string') {
+            data.featured = data.featured === 'true';
+        }
         const event = await Event.findByIdAndUpdate(
             req.params.id,
-            req.body,
+            data,
             { new: true, runValidators: true }
         );
         if (!event) {

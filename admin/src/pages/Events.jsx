@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { FiPlus, FiEdit2, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiPlus, FiEdit2, FiTrash2, FiSearch, FiUpload } from 'react-icons/fi';
 import api from '../services/api';
 
 const emptyEvent = {
     title: '', description: '', category: 'Music', date: '', time: '',
-    endDate: '', location: '', venue: '', city: '', image: '',
-    organizer: '', totalCapacity: 0, featured: false, tags: '',
+    endDate: '', venue: '', organizer: '', featured: false,
     tickets: [{ type: 'General', price: 0, available: 0 }],
+    imageFile: null,
 };
 
 export default function Events() {
@@ -16,6 +16,7 @@ export default function Events() {
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState(null);
     const [form, setForm] = useState({ ...emptyEvent });
+    const [imagePreview, setImagePreview] = useState(null);
 
     useEffect(() => { fetchEvents(); }, []);
 
@@ -27,21 +28,46 @@ export default function Events() {
         setLoading(false);
     };
 
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setForm(f => ({ ...f, imageFile: file }));
+            setImagePreview(URL.createObjectURL(file));
+        }
+    };
+
     const handleSave = async (e) => {
         e.preventDefault();
         try {
-            const data = {
-                ...form,
-                tags: typeof form.tags === 'string' ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : form.tags,
-            };
+            const formData = new FormData();
+            formData.append('title', form.title);
+            formData.append('description', form.description);
+            formData.append('category', form.category);
+            formData.append('date', form.date);
+            formData.append('time', form.time);
+            formData.append('endDate', form.endDate || '');
+            formData.append('venue', form.venue || '');
+            formData.append('organizer', form.organizer || '');
+            formData.append('featured', form.featured);
+            formData.append('tickets', JSON.stringify(form.tickets));
+
+            if (form.imageFile) {
+                formData.append('image', form.imageFile);
+            }
+
             if (editing) {
-                await api.put(`/events/${editing}`, data);
+                await api.put(`/events/${editing}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
             } else {
-                await api.post('/events', data);
+                await api.post('/events', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                });
             }
             setShowModal(false);
             setEditing(null);
             setForm({ ...emptyEvent });
+            setImagePreview(null);
             fetchEvents();
         } catch (err) {
             alert(err.response?.data?.message || 'Failed to save event');
@@ -51,9 +77,25 @@ export default function Events() {
     const handleEdit = (event) => {
         setEditing(event._id);
         setForm({
-            ...event,
-            tags: Array.isArray(event.tags) ? event.tags.join(', ') : event.tags,
+            title: event.title || '',
+            description: event.description || '',
+            category: event.category || 'Music',
+            date: event.date || '',
+            time: event.time || '',
+            endDate: event.endDate || '',
+            venue: event.venue || '',
+            organizer: event.organizer || '',
+            featured: event.featured || false,
+            tickets: event.tickets || [{ type: 'General', price: 0, available: 0 }],
+            imageFile: null,
         });
+        // Show existing image as preview
+        if (event.image) {
+            const baseUrl = api.defaults.baseURL.replace('/api', '');
+            setImagePreview(event.image.startsWith('http') ? event.image : `${baseUrl}${event.image}`);
+        } else {
+            setImagePreview(null);
+        }
         setShowModal(true);
     };
 
@@ -65,10 +107,6 @@ export default function Events() {
         } catch (err) {
             alert('Failed to delete event');
         }
-    };
-
-    const addTicket = () => {
-        setForm(f => ({ ...f, tickets: [...f.tickets, { type: '', price: 0, available: 0 }] }));
     };
 
     const updateTicket = (idx, field, val) => {
@@ -102,7 +140,7 @@ export default function Events() {
                         <FiSearch size={16} />
                         <input placeholder="Search events..." value={search} onChange={e => setSearch(e.target.value)} />
                     </div>
-                    <button className="btn btn-primary" onClick={() => { setEditing(null); setForm({ ...emptyEvent }); setShowModal(true); }}>
+                    <button className="btn btn-primary" onClick={() => { setEditing(null); setForm({ ...emptyEvent }); setImagePreview(null); setShowModal(true); }}>
                         <FiPlus /> Add Event
                     </button>
                 </div>
@@ -116,7 +154,6 @@ export default function Events() {
                                 <th>Event</th>
                                 <th>Category</th>
                                 <th>Date</th>
-                                <th>City</th>
                                 <th>Capacity</th>
                                 <th>Sold</th>
                                 <th>Featured</th>
@@ -127,12 +164,11 @@ export default function Events() {
                             {filtered.map(event => (
                                 <tr key={event._id}>
                                     <td style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                        {event.image && <img src={event.image} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
+                                        {event.image && <img src={event.image.startsWith('http') ? event.image : `${api.defaults.baseURL.replace('/api', '')}${event.image}`} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
                                         <span style={{ fontWeight: 500 }}>{event.title}</span>
                                     </td>
                                     <td>{event.category}</td>
                                     <td>{event.date}</td>
-                                    <td>{event.city}</td>
                                     <td>{event.totalCapacity?.toLocaleString()}</td>
                                     <td>{event.sold?.toLocaleString()}</td>
                                     <td>{event.featured ? '⭐' : '—'}</td>
@@ -143,7 +179,7 @@ export default function Events() {
                                 </tr>
                             ))}
                             {filtered.length === 0 && (
-                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No events found</td></tr>
+                                <tr><td colSpan={7} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No events found</td></tr>
                             )}
                         </tbody>
                     </table>
@@ -163,17 +199,11 @@ export default function Events() {
                                 <label>Description</label>
                                 <textarea value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} required />
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                                <div className="form-group">
-                                    <label>Category</label>
-                                    <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-                                        {['Music', 'Technology', 'Food & Drink', 'Arts', 'Sports', 'Business', 'Education'].map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                                <div className="form-group">
-                                    <label>City</label>
-                                    <input value={form.city} onChange={e => setForm(f => ({ ...f, city: e.target.value }))} />
-                                </div>
+                            <div className="form-group">
+                                <label>Category</label>
+                                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
+                                    {['Music', 'Technology', 'Food & Drink', 'Arts', 'Sports', 'Business', 'Education'].map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                                 <div className="form-group">
@@ -189,19 +219,35 @@ export default function Events() {
                                     <input type="time" value={form.time} onChange={e => setForm(f => ({ ...f, time: e.target.value }))} required />
                                 </div>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-                                <div className="form-group">
-                                    <label>Location</label>
-                                    <input value={form.location} onChange={e => setForm(f => ({ ...f, location: e.target.value }))} required />
-                                </div>
-                                <div className="form-group">
-                                    <label>Venue</label>
-                                    <input value={form.venue} onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} />
-                                </div>
+                            <div className="form-group">
+                                <label>Venue</label>
+                                <input value={form.venue} onChange={e => setForm(f => ({ ...f, venue: e.target.value }))} />
                             </div>
                             <div className="form-group">
-                                <label>Image URL</label>
-                                <input value={form.image} onChange={e => setForm(f => ({ ...f, image: e.target.value }))} />
+                                <label>Image (PNG, JPEG, JPG only)</label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                    <label style={{
+                                        display: 'inline-flex', alignItems: 'center', gap: 8,
+                                        padding: '8px 16px', background: 'var(--bg-input)', border: '1px solid var(--border-color)',
+                                        borderRadius: 8, cursor: 'pointer', color: 'var(--text-primary)', fontSize: 13,
+                                        transition: 'border-color 0.2s',
+                                    }}>
+                                        <FiUpload size={16} />
+                                        Choose Image
+                                        <input
+                                            type="file"
+                                            accept=".png,.jpeg,.jpg"
+                                            onChange={handleImageChange}
+                                            style={{ display: 'none' }}
+                                        />
+                                    </label>
+                                    {form.imageFile && <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{form.imageFile.name}</span>}
+                                </div>
+                                {imagePreview && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <img src={imagePreview} alt="Preview" style={{ width: 120, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid var(--border-color)' }} />
+                                    </div>
+                                )}
                             </div>
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div className="form-group">
@@ -213,15 +259,16 @@ export default function Events() {
                                     <label style={{ margin: 0 }}>Featured</label>
                                 </div>
                             </div>
-                            <div className="form-group">
-                                <label>Tags (comma-separated)</label>
-                                <input value={form.tags} onChange={e => setForm(f => ({ ...f, tags: e.target.value }))} placeholder="music, festival, outdoor" />
-                            </div>
 
                             <div style={{ marginBottom: 12 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                                     <label style={{ fontWeight: 600, fontSize: 14 }}>Tickets</label>
-                                    <button type="button" className="btn btn-sm btn-primary" onClick={addTicket}><FiPlus size={14} /> Add Ticket</button>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 6 }}>
+                                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>Type</span>
+                                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>Price</span>
+                                    <span style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 500 }}>Capacity</span>
+                                    <span></span>
                                 </div>
                                 {form.tickets.map((t, i) => (
                                     <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 1fr auto', gap: 8, marginBottom: 8 }}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import { getFeaturedEvents, getEvents, categories } from '../../services/events';
 import EventCard from '../../components/cards/EventCard';
 import Button from '../../components/ui/Button';
@@ -16,6 +17,7 @@ import {
 } from 'react-icons/hi2';
 
 const Home = () => {
+    const { isAuthenticated } = useAuth();
     const [featuredEvents, setFeaturedEvents] = useState([]);
     const [allEvents, setAllEvents] = useState([]);
     const [activeCategory, setActiveCategory] = useState('All');
@@ -104,7 +106,7 @@ const Home = () => {
                                     <HiMagnifyingGlass className="w-5 h-5" />
                                     Explore Events
                                 </Link>
-                                <Link to="/register" className="btn-secondary !bg-white/10 !border-white/20 !text-white hover:!bg-white/20 text-base !px-8 !py-4 inline-flex items-center gap-2">
+                                <Link to={isAuthenticated ? '/events' : '/register'} className="btn-secondary !bg-white/10 !border-white/20 !text-white hover:!bg-white/20 text-base !px-8 !py-4 inline-flex items-center gap-2">
                                     Get Started Free
                                     <HiArrowRight className="w-5 h-5" />
                                 </Link>
