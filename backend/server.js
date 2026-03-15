@@ -7,9 +7,6 @@ const connectDB = require('./config/db');
 // Load env vars
 dotenv.config();
 
-// Connect to database
-connectDB();
-
 const app = express();
 
 // Middleware
@@ -43,6 +40,16 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => {
+const server = app.listen(PORT, async () => {
     console.log(`Server running on port ${PORT}`);
+    await connectDB();
+});
+
+server.on('error', (error) => {
+    if (error.code === 'EADDRINUSE') {
+        console.log(`Port ${PORT} is already in use. Backend may already be running.`);
+        process.exit(0);
+    }
+    console.error(`Server startup error: ${error.message}`);
+    process.exit(1);
 });

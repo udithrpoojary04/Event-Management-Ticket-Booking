@@ -4,12 +4,26 @@ import { formatDateShort, formatCurrency } from '../../utils/formatters';
 import { resolveMediaUrl } from '../../utils/media';
 
 const EventCard = ({ event, className = '' }) => {
-    const lowestPrice = Math.min(...event.tickets.map(t => t.price));
-    const soldPercent = Math.round((event.sold / event.totalCapacity) * 100);
+    const eventId = event?._id || event?.id;
+    const tickets = Array.isArray(event?.tickets) ? event.tickets : [];
+    const prices = tickets
+        .map((ticket) => Number(ticket?.price))
+        .filter((price) => Number.isFinite(price));
+    const lowestPrice = prices.length > 0 ? Math.min(...prices) : 0;
+
+    const sold = Number.isFinite(Number(event?.sold)) ? Number(event.sold) : 0;
+    const totalCapacity = Number.isFinite(Number(event?.totalCapacity)) && Number(event.totalCapacity) > 0
+        ? Number(event.totalCapacity)
+        : 0;
+    const soldPercent = totalCapacity > 0
+        ? Math.min(100, Math.max(0, Math.round((sold / totalCapacity) * 100)))
+        : 0;
+
+    const locationText = event?.location || event?.venue || 'Location TBA';
 
     return (
         <Link
-            to={`/events/${event._id}`}
+            to={eventId ? `/events/${eventId}` : '/events'}
             className={`card-hover group block overflow-hidden ${className}`}
             aria-label={`View details for ${event.title}`}
         >
@@ -56,7 +70,7 @@ const EventCard = ({ event, className = '' }) => {
                     </div>
                     <div className="flex items-center gap-2 text-surface-500 text-sm">
                         <HiMapPin className="w-4 h-4 text-primary-400 flex-shrink-0" />
-                        <span className="line-clamp-1">{event.location}</span>
+                        <span className="line-clamp-1">{locationText}</span>
                     </div>
                 </div>
 
@@ -65,7 +79,7 @@ const EventCard = ({ event, className = '' }) => {
                     <div className="flex justify-between text-xs">
                         <span className="text-surface-500 flex items-center gap-1">
                             <HiTicket className="w-3.5 h-3.5" />
-                            {event.sold.toLocaleString()} sold
+                            {sold.toLocaleString()} sold
                         </span>
                         <span className={`font-semibold ${soldPercent > 80 ? 'text-red-500' : 'text-emerald-500'}`}>
                             {soldPercent > 80 ? 'Selling Fast!' : `${100 - soldPercent}% left`}
