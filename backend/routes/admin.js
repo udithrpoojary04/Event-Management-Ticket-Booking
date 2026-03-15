@@ -2,6 +2,7 @@ const express = require('express');
 const User = require('../models/User');
 const Event = require('../models/Event');
 const Booking = require('../models/Booking');
+const Review = require('../models/Review');
 const { auth, adminOnly } = require('../middleware/auth');
 
 const router = express.Router();
@@ -99,6 +100,93 @@ router.get('/bookings', auth, adminOnly, async (req, res) => {
             .populate('event', 'title')
             .sort({ createdAt: -1 });
         res.json(bookings);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/admin/scan/:qrCode - Find booking by QR code
+router.get('/scan/:qrCode', auth, adminOnly, async (req, res) => {
+    try {
+        const rawQrCode = req.params.qrCode || '';
+        const qrCode = decodeURIComponent(rawQrCode).trim();
+
+        if (!qrCode) {
+            return res.status(400).json({ message: 'QR code is required' });
+        }
+
+        const booking = await Booking.findOne({ qrCode })
+            .populate('user', 'name email')
+            .populate('event', 'title date time location');
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Ticket not found for this QR code' });
+        }
+
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// PUT /api/admin/bookings/:id/check-in - Mark booking as checked in
+router.put('/bookings/:id/check-in', auth, adminOnly, async (req, res) => {
+    try {
+        const booking = await Booking.findById(req.params.id)
+            .populate('user', 'name email')
+            .populate('event', 'title date time location');
+
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        if (booking.status === 'cancelled') {
+            return res.status(400).json({ message: 'Cancelled booking cannot be checked in' });
+        }
+
+        if (booking.checkedInAt) {
+            return res.status(400).json({ message: 'Ticket already checked in', booking });
+        }
+
+        booking.status = 'completed';
+        booking.checkedInAt = new Date();
+        booking.checkedInBy = req.user._id;
+        await booking.save();
+
+        res.json(booking);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// GET /api/admin/reviews - List all reviews
+router.get('/reviews', auth, adminOnly, async (req, res) => {
+    try {
+        const reviews = await Review.find()
+            .populate('event', 'title')
+            .sort({ createdAt: -1 });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// DELETE /api/admin/reviews/:id - Delete a review
+router.delete('/reviews/:id', auth, adminOnly, async (req, res) => {
+    try {
+        const review = await Review.findByIdAndDelete(req.params.id);
+        if (!review) return res.status(404).json({ message: 'Review not found' });
+
+        // Recalculate event rating after deletion
+        const stats = await Review.aggregate([
+            { $match: { event: review.event } },
+            { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+        ]);
+        const avg = stats.length ? Math.round(stats[0].avg * 10) / 10 : 0;
+        const count = stats.length ? stats[0].count : 0;
+        await Event.findByIdAndUpdate(review.event, { rating: avg, reviews: count });
+
+        res.json({ message: 'Review deleted' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

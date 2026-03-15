@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { getBookings } from '../../services/bookings';
 import { formatCurrency, formatDateShort, getStatusColor } from '../../utils/formatters';
+import { resolveMediaUrl } from '../../utils/media';
 import QRCode from '../../components/common/QRCode';
 import EmptyState from '../../components/common/EmptyState';
 import Modal from '../../components/ui/Modal';
@@ -75,7 +76,7 @@ const BookingHistory = () => {
             ctx.fillStyle = '#ffffff';
             ctx.font = 'bold 24px Inter, system-ui, sans-serif';
             ctx.textAlign = 'center';
-            ctx.fillText('EventHub E-Ticket', w / 2, 50);
+            ctx.fillText('Eventify E-Ticket', w / 2, 50);
 
             // Booking ID
             ctx.fillStyle = '#94a3b8';
@@ -83,7 +84,7 @@ const BookingHistory = () => {
             ctx.fillText('Booking ID', w / 2, 115);
             ctx.fillStyle = '#4338ca';
             ctx.font = 'bold 18px Courier New, monospace';
-            ctx.fillText(selectedBooking._id, w / 2, 140);
+            ctx.fillText(String(selectedBooking.bookingId ?? selectedBooking._id), w / 2, 140);
 
             // QR Code
             if (qrImage) {
@@ -151,7 +152,7 @@ const BookingHistory = () => {
 
             // Download
             const link = document.createElement('a');
-            link.download = `e-ticket-${selectedBooking._id}.png`;
+            link.download = `e-ticket-${selectedBooking.bookingId ?? selectedBooking._id}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
         };
@@ -245,7 +246,7 @@ const BookingHistory = () => {
                             >
                                 <div className="flex flex-col sm:flex-row gap-4">
                                     <img
-                                        src={booking.eventImage}
+                                        src={resolveMediaUrl(booking.eventImage)}
                                         alt={booking.eventTitle}
                                         className="w-full sm:w-32 h-32 rounded-xl object-cover"
                                     />
@@ -305,12 +306,12 @@ const BookingHistory = () => {
                     <div>
                         <div ref={ticketRef} style={{ padding: 24, backgroundColor: '#ffffff' }}>
                             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>🎫 EventHub E-Ticket</h2>
+                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#0f172a', marginBottom: 4 }}>🎫 Eventify E-Ticket</h2>
                                 <p style={{ fontSize: 12, color: '#94a3b8' }}>Present this ticket at the venue</p>
                             </div>
                             <div className="bg-gradient-to-br from-primary-50 to-accent-50 rounded-2xl p-6 mb-6" style={{ textAlign: 'center' }}>
                                 <p className="text-sm text-surface-500 mb-1">Booking ID</p>
-                                <p className="font-mono font-bold text-lg text-primary-700 mb-4">{selectedBooking._id}</p>
+                                <p className="font-mono font-bold text-lg text-primary-700 mb-4">{selectedBooking.bookingId ?? selectedBooking._id}</p>
                                 <QRCode value={selectedBooking.qrCode} size={180} className="mx-auto mb-4" />
                                 <p className="text-xs text-surface-400">Scan this QR code at the venue</p>
                             </div>

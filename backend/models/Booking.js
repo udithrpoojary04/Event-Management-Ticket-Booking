@@ -11,6 +11,10 @@ const bookingSchema = new mongoose.Schema({
         ref: 'Event',
         required: true,
     },
+    bookingId: {
+        type: Number,
+        default: null,
+    },
     eventTitle: { type: String, default: '' },
     eventImage: { type: String, default: '' },
     eventDate: { type: String, default: '' },
@@ -53,8 +57,19 @@ const bookingSchema = new mongoose.Schema({
         type: String,
         default: '',
     },
+    checkedInAt: {
+        type: Date,
+        default: null,
+    },
+    checkedInBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null,
+    },
 }, { timestamps: true });
 
 bookingSchema.index({ user: 1, createdAt: -1 });
+bookingSchema.index({ qrCode: 1 });
+bookingSchema.index({ event: 1, bookingId: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model('Booking', bookingSchema);

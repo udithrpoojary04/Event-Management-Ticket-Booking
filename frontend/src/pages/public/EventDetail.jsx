@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { getEventById } from '../../services/events';
+import { getEventById, getEventReviews, submitReview } from '../../services/events';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { formatDate, formatTime, formatCurrency } from '../../utils/formatters';
+import { resolveMediaUrl } from '../../utils/media';
 import Button from '../../components/ui/Button';
 import {
     HiCalendar,
@@ -17,18 +18,27 @@ import {
     HiShare,
     HiMinus,
     HiPlus,
+    HiPencil,
+    HiCheckCircle,
 } from 'react-icons/hi2';
 
 const EventDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { isAuthenticated } = useAuth();
+    const { isAuthenticated, user } = useAuth();
     const toast = useToast();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [selectedTicket, setSelectedTicket] = useState(null);
     const [quantity, setQuantity] = useState(1);
     const [liked, setLiked] = useState(false);
+
+    // Reviews state
+    const [reviews, setReviews] = useState([]);
+    const [reviewForm, setReviewForm] = useState({ rating: 0, comment: '' });
+    const [hoverRating, setHoverRating] = useState(0);
+    const [submittingReview, setSubmittingReview] = useState(false);
+    const [userReview, setUserReview] = useState(null);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -45,6 +55,53 @@ const EventDetail = () => {
         };
         fetchEvent();
     }, [id]);
+
+    useEffect(() => {
+        const fetchReviews = async () => {
+            try {
+                const res = await getEventReviews(id);
+                setReviews(res.data);
+                if (user) {
+                    const uid = user._id?.toString() || user.id?.toString();
+                    const mine = res.data.find(r => r.user?.toString() === uid);
+                    if (mine) {
+                        setUserReview(mine);
+                        setReviewForm({ rating: mine.rating, comment: mine.comment });
+                    }
+                }
+            } catch {
+                // non-fatal
+            }
+        };
+        fetchReviews();
+    }, [id, user]);
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        if (!reviewForm.rating) {
+            toast.warning('Please select a star rating');
+            return;
+        }
+        setSubmittingReview(true);
+        try {
+            const res = await submitReview(id, reviewForm);
+            const updated = res.data;
+            setReviews(prev => {
+                const without = prev.filter(r => r._id !== updated._id);
+                return [updated, ...without];
+            });
+            setUserReview(updated);
+            // Refresh event to get updated aggregated rating
+            const evRes = await getEventById(id);
+            setEvent(evRes.data);
+            toast.success(userReview ? 'Review updated!' : 'Review submitted!');
+        } catch (err) {
+            const msg = err?.response?.data?.message || 'Failed to submit review';
+            toast.error(msg);
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
 
     const handleBookNow = () => {
         if (!isAuthenticated) {
@@ -83,7 +140,7 @@ const EventDetail = () => {
         <div className="animate-fade-in">
             {/* Hero Image */}
             <div className="relative h-64 sm:h-80 lg:h-[420px]">
-                <img src={event.image} alt={event.title} className="w-full h-full object-cover" />
+                <img src={resolveMediaUrl(event.image)} alt={event.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
 
                 {/* Back button */}
@@ -164,7 +221,7 @@ const EventDetail = () => {
                         <div className="card p-6 mb-10">
                             <h2 className="text-lg font-bold text-surface-900 mb-4">Organized By</h2>
                             <div className="flex items-center gap-4">
-                                <img src={event.organizerAvatar} alt={event.organizer} className="w-14 h-14 rounded-xl" />
+                                <img src={resolveMediaUrl(event.organizerAvatar)} alt={event.organizer} className="w-14 h-14 rounded-xl" />
                                 <div>
                                     <h3 className="font-semibold text-surface-900">{event.organizer}</h3>
                                     <p className="text-sm text-surface-500">Event Organizer</p>
@@ -230,6 +287,138 @@ const EventDetail = () => {
                                     </span>
                                 ))}
                             </div>
+                        </div>
+
+                        {/* Reviews */}
+                        <div className="mt-10">
+                            <div className="flex items-center gap-3 mb-6">
+                                <h2 className="text-xl font-bold text-surface-900">Reviews</h2>
+                                <span className="px-2.5 py-0.5 bg-surface-100 text-surface-600 text-sm rounded-full">
+                                    {event.reviews} {event.reviews === 1 ? 'review' : 'reviews'}
+                                </span>
+                                {event.reviews > 0 && (
+                                    <div className="flex items-center gap-1 ml-1">
+                                        <HiStar className="w-4 h-4 text-amber-400" />
+                                        <span className="font-semibold text-surface-900">{event.rating.toFixed(1)}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Rating distribution */}
+                            {event.reviews > 0 && (
+                                <div className="card p-5 mb-6">
+                                    {[5, 4, 3, 2, 1].map(star => {
+                                        const count = reviews.filter(r => r.rating === star).length;
+                                        const pct = reviews.length ? Math.round((count / reviews.length) * 100) : 0;
+                                        return (
+                                            <div key={star} className="flex items-center gap-3 mb-2 last:mb-0">
+                                                <span className="text-sm text-surface-500 w-3">{star}</span>
+                                                <HiStar className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                                                <div className="flex-1 h-2 bg-surface-100 rounded-full overflow-hidden">
+                                                    <div
+                                                        className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                                                        style={{ width: `${pct}%` }}
+                                                    />
+                                                </div>
+                                                <span className="text-xs text-surface-400 w-8 text-right">{count}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            {/* Submit review form */}
+                            {isAuthenticated ? (
+                                <div className="card p-6 mb-6">
+                                    <h3 className="font-semibold text-surface-900 mb-4 flex items-center gap-2">
+                                        {userReview ? (
+                                            <><HiPencil className="w-4 h-4 text-primary-500" /> Edit Your Review</>
+                                        ) : (
+                                            <><HiStar className="w-4 h-4 text-amber-400" /> Write a Review</>
+                                        )}
+                                    </h3>
+                                    <form onSubmit={handleSubmitReview}>
+                                        {/* Star selector */}
+                                        <div className="flex items-center gap-1 mb-4">
+                                            {[1, 2, 3, 4, 5].map(s => (
+                                                <button
+                                                    key={s}
+                                                    type="button"
+                                                    onMouseEnter={() => setHoverRating(s)}
+                                                    onMouseLeave={() => setHoverRating(0)}
+                                                    onClick={() => setReviewForm(prev => ({ ...prev, rating: s }))}
+                                                    className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+                                                    aria-label={`Rate ${s} star${s > 1 ? 's' : ''}`}
+                                                >
+                                                    <HiStar
+                                                        className={`w-8 h-8 transition-colors ${(hoverRating || reviewForm.rating) >= s ? 'text-amber-400' : 'text-surface-200'}`}
+                                                    />
+                                                </button>
+                                            ))}
+                                            {(hoverRating || reviewForm.rating) > 0 && (
+                                                <span className="ml-2 text-sm text-surface-500">
+                                                    {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][hoverRating || reviewForm.rating]}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <textarea
+                                            value={reviewForm.comment}
+                                            onChange={e => setReviewForm(prev => ({ ...prev, comment: e.target.value }))}
+                                            placeholder="Share your experience about this event..."
+                                            rows={3}
+                                            required
+                                            className="w-full px-4 py-3 rounded-xl border border-surface-200 focus:outline-none focus:ring-2 focus:ring-primary-300 text-sm text-surface-800 resize-none"
+                                        />
+                                        <Button
+                                            type="submit"
+                                            className="mt-3"
+                                            loading={submittingReview}
+                                            icon={userReview ? HiPencil : HiCheckCircle}
+                                            size="sm"
+                                        >
+                                            {userReview ? 'Update Review' : 'Submit Review'}
+                                        </Button>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div className="card p-5 mb-6 text-center border-dashed">
+                                    <p className="text-surface-500 text-sm">
+                                        <button onClick={() => navigate('/login', { state: { from: `/events/${id}` } })} className="text-primary-600 font-semibold hover:underline">Sign in</button>
+                                        {' '}to leave a review
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* Reviews list */}
+                            {reviews.length > 0 ? (
+                                <div className="space-y-4">
+                                    {reviews.map(review => (
+                                        <div key={review._id} className="card p-5">
+                                            <div className="flex items-start justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-full gradient-bg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                                        {review.name?.charAt(0).toUpperCase()}
+                                                    </div>
+                                                    <div>
+                                                        <p className="font-semibold text-surface-900 text-sm">{review.name}</p>
+                                                        <p className="text-xs text-surface-400">
+                                                            {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div className="flex items-center gap-0.5">
+                                                    {[1, 2, 3, 4, 5].map(s => (
+                                                        <HiStar key={s} className={`w-4 h-4 ${s <= review.rating ? 'text-amber-400' : 'text-surface-200'}`} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <p className="text-sm text-surface-600 leading-relaxed">{review.comment}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-surface-400 text-sm text-center py-8">No reviews yet. Be the first to share your experience!</p>
+                            )}
                         </div>
                     </div>
 

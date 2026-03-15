@@ -11,9 +11,6 @@ import {
     HiMapPin,
     HiPencilSquare,
     HiCamera,
-    HiTicket,
-    HiCalendar,
-    HiStar,
 } from 'react-icons/hi2';
 
 const Profile = () => {
@@ -23,7 +20,6 @@ const Profile = () => {
     const [loading, setLoading] = useState(false);
     const [form, setForm] = useState({
         name: user?.name || '',
-        email: user?.email || '',
         phone: user?.phone || '',
         location: user?.location || '',
     });
@@ -35,8 +31,8 @@ const Profile = () => {
     const handleSave = async () => {
         setLoading(true);
         try {
-            await updateProfile(form);
-            updateUser(form);
+            const res = await updateProfile(form);
+            updateUser(res.data);
             toast.success('Profile updated successfully!');
             setEditing(false);
         } catch (err) {
@@ -46,11 +42,14 @@ const Profile = () => {
         }
     };
 
-    const stats = [
-        { icon: HiTicket, value: '12', label: 'Bookings', color: 'text-primary-500 bg-primary-100' },
-        { icon: HiCalendar, value: '8', label: 'Events Attended', color: 'text-emerald-500 bg-emerald-100' },
-        { icon: HiStar, value: '4.9', label: 'Rating', color: 'text-amber-500 bg-amber-100' },
-    ];
+    const handleCancelEdit = () => {
+        setForm({
+            name: user?.name || '',
+            phone: user?.phone || '',
+            location: user?.location || '',
+        });
+        setEditing(false);
+    };
 
     return (
         <div className="py-10 animate-fade-in">
@@ -81,7 +80,7 @@ const Profile = () => {
                                 <p className="text-sm text-surface-400 mt-1 capitalize">{user?.role} Account</p>
                             </div>
                             <Button
-                                onClick={() => setEditing(!editing)}
+                                onClick={() => (editing ? handleCancelEdit() : setEditing(true))}
                                 variant={editing ? 'outline' : 'secondary'}
                                 icon={HiPencilSquare}
                                 size="sm"
@@ -92,19 +91,6 @@ const Profile = () => {
                     </div>
                 </div>
 
-                {/* Stats */}
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                    {stats.map((stat, i) => (
-                        <div key={i} className="card p-5 text-center">
-                            <div className={`w-12 h-12 rounded-xl ${stat.color} flex items-center justify-center mx-auto mb-3`}>
-                                <stat.icon className="w-6 h-6" />
-                            </div>
-                            <p className="text-2xl font-bold text-surface-900">{stat.value}</p>
-                            <p className="text-sm text-surface-500">{stat.label}</p>
-                        </div>
-                    ))}
-                </div>
-
                 {/* Profile Info */}
                 <div className="card p-8">
                     <h2 className="text-xl font-bold text-surface-900 mb-6">Personal Information</h2>
@@ -112,13 +98,12 @@ const Profile = () => {
                         <div className="space-y-5">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <Input label="Full Name" name="name" value={form.name} onChange={handleChange} icon={HiUser} required />
-                                <Input label="Email" type="email" name="email" value={form.email} onChange={handleChange} icon={HiEnvelope} required />
                                 <Input label="Phone" type="tel" name="phone" value={form.phone} onChange={handleChange} icon={HiPhone} />
                                 <Input label="Location" name="location" value={form.location} onChange={handleChange} icon={HiMapPin} />
                             </div>
                             <div className="flex gap-3 pt-2">
                                 <Button onClick={handleSave} loading={loading}>Save Changes</Button>
-                                <Button variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+                                <Button variant="ghost" onClick={handleCancelEdit}>Cancel</Button>
                             </div>
                         </div>
                     ) : (

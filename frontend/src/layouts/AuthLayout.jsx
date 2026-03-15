@@ -16,7 +16,7 @@ const AuthLayout = () => {
                     <div className="w-12 h-12 rounded-2xl gradient-bg flex items-center justify-center shadow-glow">
                         <HiCalendarDays className="w-7 h-7 text-white" />
                     </div>
-                    <span className="text-3xl font-bold gradient-text">EventHub</span>
+                    <span className="text-3xl font-bold gradient-text">Eventify</span>
                 </Link>
 
                 {/* Card */}
@@ -26,7 +26,7 @@ const AuthLayout = () => {
 
                 {/* Bottom text */}
                 <p className="text-center text-sm text-surface-400 mt-6">
-                    © {new Date().getFullYear()} EventHub. All rights reserved.
+                    © {new Date().getFullYear()} Eventify. All rights reserved.
                 </p>
             </div>
         </div>

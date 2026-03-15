@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFeaturedEvents, getEvents, categories } from '../../services/events';
+import { resolveMediaUrl } from '../../utils/media';
 import EventCard from '../../components/cards/EventCard';
 import Button from '../../components/ui/Button';
 import {
@@ -128,7 +129,7 @@ const Home = () => {
                                         className="flex gap-4 bg-white/10 backdrop-blur-xl border border-white/15 rounded-2xl p-4 hover:bg-white/15 transition-all duration-300 group"
                                     >
                                         <img
-                                            src={event.image}
+                                            src={resolveMediaUrl(event.image)}
                                             alt={event.title}
                                             className="w-20 h-20 rounded-xl object-cover flex-shrink-0 group-hover:scale-105 transition-transform duration-300"
                                         />
@@ -213,7 +214,7 @@ const Home = () => {
                                         <Link to={`/events/${event._id}`} className="block group">
                                             <div className="relative h-64 sm:h-80 lg:h-[420px] rounded-2xl overflow-hidden">
                                                 <img
-                                                    src={event.image}
+                                                    src={resolveMediaUrl(event.image)}
                                                     alt={event.title}
                                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                                 />

@@ -29,7 +29,7 @@ export default function Login({ onLogin }) {
     return (
         <div className="login-page">
             <div className="login-card">
-                <h1>EventHub</h1>
+                <h1>Eventify</h1>
                 <p>Admin Panel — Sign in to continue</p>
 
                 {error && <div className="error-msg">{error}</div>}

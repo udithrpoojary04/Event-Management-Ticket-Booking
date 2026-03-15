@@ -7,6 +7,8 @@ import Events from './pages/Events';
 import Users from './pages/Users';
 import Bookings from './pages/Bookings';
 import Feedback from './pages/Feedback';
+import Reviews from './pages/Reviews';
+import Scanner from './pages/Scanner';
 
 function AdminLayout({ children, onLogout }) {
     return (
@@ -80,9 +82,19 @@ function App() {
                         <Bookings />
                     </ProtectedRoute>
                 } />
+                <Route path="/scanner" element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={handleLogout}>
+                        <Scanner />
+                    </ProtectedRoute>
+                } />
                 <Route path="/feedback" element={
                     <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={handleLogout}>
                         <Feedback />
+                    </ProtectedRoute>
+                } />
+                <Route path="/reviews" element={
+                    <ProtectedRoute isAuthenticated={isAuthenticated} onLogout={handleLogout}>
+                        <Reviews />
                     </ProtectedRoute>
                 } />
                 <Route path="*" element={<Navigate to="/" replace />} />

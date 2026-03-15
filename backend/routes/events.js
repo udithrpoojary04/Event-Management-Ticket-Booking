@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Event = require('../models/Event');
+const Review = require('../models/Review');
 const { auth, adminOnly } = require('../middleware/auth');
 
 const router = express.Router();
@@ -180,6 +181,69 @@ router.delete('/:id', auth, adminOnly, async (req, res) => {
         }
         res.json({ message: 'Event deleted successfully' });
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// Helper: recalculate and persist avg rating on Event
+async function syncEventRating(eventId) {
+    const stats = await Review.aggregate([
+        { $match: { event: eventId } },
+        { $group: { _id: null, avg: { $avg: '$rating' }, count: { $sum: 1 } } },
+    ]);
+    const avg = stats.length ? Math.round(stats[0].avg * 10) / 10 : 0;
+    const count = stats.length ? stats[0].count : 0;
+    await Event.findByIdAndUpdate(eventId, { rating: avg, reviews: count });
+}
+
+// GET /api/events/:id/reviews - Public
+router.get('/:id/reviews', async (req, res) => {
+    try {
+        const reviews = await Review.find({ event: req.params.id }).sort({ createdAt: -1 });
+        res.json(reviews);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// POST /api/events/:id/reviews - Authenticated users who have booked
+router.post('/:id/reviews', auth, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+
+        if (!rating || rating < 1 || rating > 5) {
+            return res.status(400).json({ message: 'Rating must be between 1 and 5' });
+        }
+        if (!comment || !comment.trim()) {
+            return res.status(400).json({ message: 'Comment is required' });
+        }
+
+        const event = await Event.findById(req.params.id);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        const existing = await Review.findOne({ event: req.params.id, user: req.user._id });
+        if (existing) {
+            existing.rating = rating;
+            existing.comment = comment.trim();
+            await existing.save();
+            await syncEventRating(event._id);
+            return res.json(existing);
+        }
+
+        const review = await Review.create({
+            event: req.params.id,
+            user: req.user._id,
+            name: req.user.name,
+            rating,
+            comment: comment.trim(),
+        });
+
+        await syncEventRating(event._id);
+        res.status(201).json(review);
+    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(409).json({ message: 'You have already reviewed this event' });
+        }
         res.status(500).json({ message: error.message });
     }
 });

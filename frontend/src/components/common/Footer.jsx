@@ -35,7 +35,7 @@ const Footer = () => {
                             <div className="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center">
                                 <HiCalendarDays className="w-6 h-6 text-white" />
                             </div>
-                            <span className="text-2xl font-bold text-white">EventHub</span>
+                            <span className="text-2xl font-bold text-white">Eventify</span>
                         </Link>
                         <p className="text-surface-400 text-sm leading-relaxed mb-6 max-w-sm">
                             Discover and book amazing events near you. From music festivals to tech conferences,
@@ -83,7 +83,7 @@ const Footer = () => {
             <div className="border-t border-surface-800">
                 <div className="page-container py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-sm text-surface-500">
-                        © {currentYear} EventHub. All rights reserved.
+                        © {currentYear} Eventify. All rights reserved.
                     </p>
                     <p className="text-sm text-surface-500 flex items-center gap-1">
                         Made with <HiHeart className="w-4 h-4 text-red-500" /> for event lovers

@@ -1,12 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { FiGrid, FiCalendar, FiUsers, FiBookOpen, FiMessageSquare, FiLogOut } from 'react-icons/fi';
+import { FiGrid, FiCalendar, FiUsers, FiBookOpen, FiMessageSquare, FiLogOut, FiStar, FiCamera } from 'react-icons/fi';
 
 const navItems = [
     { path: '/dashboard', icon: FiGrid, label: 'Dashboard' },
     { path: '/events', icon: FiCalendar, label: 'Events' },
     { path: '/users', icon: FiUsers, label: 'Users' },
     { path: '/bookings', icon: FiBookOpen, label: 'Bookings' },
-    { path: '/feedback', icon: FiMessageSquare, label: 'Feedback' },
+    { path: '/scanner', icon: FiCamera, label: 'Scanner' },
+    { path: '/reviews', icon: FiStar, label: 'Reviews' },
+    // { path: '/feedback', icon: FiMessageSquare, label: 'Feedback' },
 ];
 
 export default function Sidebar({ onLogout }) {
@@ -14,7 +16,7 @@ export default function Sidebar({ onLogout }) {
         <aside style={styles.sidebar}>
             <div style={styles.logo}>
                 <span style={styles.logoIcon}>⚡</span>
-                <span style={styles.logoText}>EventHub</span>
+                <span style={styles.logoText}>Eventify</span>
                 <span style={styles.adminBadge}>Admin</span>
             </div>
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency, formatDate, formatTime } from '../../utils/formatters';
+import { resolveMediaUrl } from '../../utils/media';
 import Button from '../../components/ui/Button';
 import {
     HiCalendar,
@@ -56,7 +57,7 @@ const BookingSummary = () => {
                         {/* Event card */}
                         <div className="card overflow-hidden">
                             <div className="flex flex-col sm:flex-row">
-                                <img src={event.image} alt={event.title} className="w-full sm:w-48 h-40 object-cover" />
+                                <img src={resolveMediaUrl(event.image)} alt={event.title} className="w-full sm:w-48 h-40 object-cover" />
                                 <div className="p-6 flex-1">
                                     <span className="badge-primary text-xs mb-2">{event.category}</span>
                                     <h2 className="text-xl font-bold text-surface-900 mb-3">{event.title}</h2>
@@ -152,7 +153,7 @@ const BookingSummary = () => {
 
                             <div className="flex items-center justify-center gap-2 mt-4 text-xs text-surface-400">
                                 <HiShieldCheck className="w-4 h-4 text-emerald-500" />
-                                Secure checkout powered by EventHub
+                                Secure checkout powered by Eventify
                             </div>
                         </div>
                     </div>

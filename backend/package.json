@@ -1,5 +1,5 @@
 {
-    "name": "eventhub-backend",
+    "name": "eventify-backend",
     "version": "1.0.0",
     "description": "Backend API for Event Management & Ticket Booking",
     "main": "server.js",

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { HiCalendar, HiMapPin, HiTicket, HiStar } from 'react-icons/hi2';
 import { formatDateShort, formatCurrency } from '../../utils/formatters';
+import { resolveMediaUrl } from '../../utils/media';
 
 const EventCard = ({ event, className = '' }) => {
     const lowestPrice = Math.min(...event.tickets.map(t => t.price));
@@ -15,7 +16,7 @@ const EventCard = ({ event, className = '' }) => {
             {/* Image */}
             <div className="relative h-48 overflow-hidden">
                 <img
-                    src={event.image}
+                    src={resolveMediaUrl(event.image)}
                     alt={event.title}
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                     loading="lazy"

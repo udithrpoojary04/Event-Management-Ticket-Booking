@@ -33,4 +33,14 @@ export const deleteEvent = async (id) => {
     return { data: response.data };
 };
 
+export const getEventReviews = async (id) => {
+    const response = await api.get(`/events/${id}/reviews`);
+    return { data: response.data };
+};
+
+export const submitReview = async (id, reviewData) => {
+    const response = await api.post(`/events/${id}/reviews`, reviewData);
+    return { data: response.data };
+};
+
 export { categories, cities };

@@ -1,5 +1,6 @@
 const express = require('express');
 const Booking = require('../models/Booking');
+const BookingCounter = require('../models/BookingCounter');
 const Event = require('../models/Event');
 const { auth } = require('../middleware/auth');
 
@@ -55,13 +56,21 @@ router.post('/', auth, async (req, res) => {
             return res.status(400).json({ message: 'Not enough tickets available' });
         }
 
-        // Generate QR code string
-        const qrCode = `EVHUB-${Date.now()}-${ticketType.replace(/\s/g, '').toUpperCase().slice(0, 3)}`;
+        const counter = await BookingCounter.findOneAndUpdate(
+            { event: eventId },
+            { $inc: { seq: 1 } },
+            { new: true, upsert: true, setDefaultsOnInsert: true }
+        );
+        const bookingId = counter.seq;
+
+        // Generate deterministic QR code string with event + booking sequence
+        const qrCode = `EVHUB-${eventId}-${bookingId}`;
 
         // Create booking
         const booking = new Booking({
             user: req.user._id,
             event: eventId,
+            bookingId,
             eventTitle: eventTitle || event.title,
             eventImage: eventImage || event.image,
             eventDate: eventDate || event.date,

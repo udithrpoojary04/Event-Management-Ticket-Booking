@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { createBooking } from '../../services/bookings';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/formatters';
+import { resolveMediaUrl } from '../../utils/media';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import {
@@ -14,6 +15,7 @@ import {
     HiArrowRight,
     HiHome,
 } from 'react-icons/hi2';
+import GooglePayIcon from '../../components/ui/GooglePayIcon';
 
 const Payment = () => {
     const location = useLocation();
@@ -72,7 +74,7 @@ const Payment = () => {
                 totalPrice: subtotal,
                 serviceFee,
                 grandTotal: total,
-                paymentMethod: paymentMethod === 'card' ? 'Credit Card' : 'PayPal',
+                paymentMethod: paymentMethod === 'card' ? 'Credit Card' : 'Google Pay',
             });
 
             setBookingData(booking.data);
@@ -117,7 +119,7 @@ const Payment = () => {
                     <div className="card p-6 text-left mb-6">
                         <div className="flex justify-between text-sm mb-2">
                             <span className="text-surface-500">Booking ID</span>
-                            <span className="font-mono font-semibold text-primary-600">{bookingData?.id}</span>
+                            <span className="font-mono font-semibold text-primary-600">{bookingData?.bookingId ?? bookingData?._id}</span>
                         </div>
                         <div className="flex justify-between text-sm mb-2">
                             <span className="text-surface-500">Event</span>
@@ -193,7 +195,7 @@ const Payment = () => {
                             <div className="grid grid-cols-2 gap-3">
                                 {[
                                     { id: 'card', label: 'Credit Card', icon: '💳' },
-                                    { id: 'paypal', label: 'PayPal', icon: '🅿️' },
+                                    { id: 'gpay', label: 'Google Pay', icon: '💰' },
                                 ].map((method) => (
                                     <button
                                         key={method.id}
@@ -203,7 +205,13 @@ const Payment = () => {
                                                 : 'border-surface-200 hover:border-surface-300'
                                             }`}
                                     >
-                                        <span className="text-2xl mb-2 block">{method.icon}</span>
+                                        <div className="h-10 mb-2 flex items-center">
+                                            {method.id === 'gpay' ? (
+                                                <GooglePayIcon className="w-12 h-12 text-surface-900" />
+                                            ) : (
+                                                <span className="text-2xl">{method.icon}</span>
+                                            )}
+                                        </div>
                                         <span className="font-semibold text-sm text-surface-900">{method.label}</span>
                                     </button>
                                 ))}
@@ -263,14 +271,18 @@ const Payment = () => {
                             </form>
                         )}
 
-                        {paymentMethod === 'paypal' && (
+                        {paymentMethod === 'gpay' && (
                             <form onSubmit={handlePayment} className="card p-6">
                                 <div className="text-center py-8">
-                                    <p className="text-5xl mb-4">🅿️</p>
-                                    <h3 className="font-bold text-surface-900 mb-2">Pay with PayPal</h3>
-                                    <p className="text-sm text-surface-500 mb-6">You will be redirected to PayPal to complete payment</p>
+                                    <div className="flex justify-center mb-6">
+                                        <div className="p-8 bg-surface-50 rounded-full border border-surface-100 flex items-center justify-center">
+                                            <GooglePayIcon className="w-20 h-20 text-surface-900" />
+                                        </div>
+                                    </div>
+                                    <h3 className="font-bold text-surface-900 mb-2">Pay with Google Pay</h3>
+                                    <p className="text-sm text-surface-500 mb-6">You will be redirected to Google Pay to complete payment</p>
                                     <Button type="submit" size="lg" loading={processing} className="mx-auto">
-                                        Continue to PayPal <HiArrowRight className="w-4 h-4 ml-2" />
+                                        Continue to Google Pay <HiArrowRight className="w-4 h-4 ml-2" />
                                     </Button>
                                 </div>
                             </form>
@@ -282,7 +294,7 @@ const Payment = () => {
                         <div className="card p-6 sticky top-24">
                             <h3 className="font-bold text-surface-900 mb-4">Order Summary</h3>
                             <div className="flex items-center gap-3 mb-4 pb-4 border-b border-surface-100">
-                                <img src={event.image} alt={event.title} className="w-16 h-16 rounded-xl object-cover" />
+                                <img src={resolveMediaUrl(event.image)} alt={event.title} className="w-16 h-16 rounded-xl object-cover" />
                                 <div>
                                     <p className="font-semibold text-sm text-surface-900 line-clamp-1">{event.title}</p>
                                     <p className="text-xs text-surface-500">{ticket.type} × {quantity}</p>

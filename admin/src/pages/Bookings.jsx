@@ -43,6 +43,7 @@ export default function Bookings() {
                     <table>
                         <thead>
                             <tr>
+                                <th>Booking ID</th>
                                 <th>Event</th>
                                 <th>User</th>
                                 <th>Ticket Type</th>
@@ -56,6 +57,7 @@ export default function Bookings() {
                         <tbody>
                             {filtered.map(booking => (
                                 <tr key={booking._id}>
+                                    <td style={{ fontWeight: 600 }}>{booking.bookingId ?? booking._id}</td>
                                     <td style={{ fontWeight: 500 }}>{booking.eventTitle}</td>
                                     <td>{booking.user?.name || 'N/A'}</td>
                                     <td>{booking.ticketType}</td>
@@ -67,7 +69,7 @@ export default function Bookings() {
                                 </tr>
                             ))}
                             {filtered.length === 0 && (
-                                <tr><td colSpan={8} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No bookings found</td></tr>
+                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No bookings found</td></tr>
                             )}
                         </tbody>
                     </table>

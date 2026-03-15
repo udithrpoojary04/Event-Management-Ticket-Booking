@@ -26,7 +26,6 @@ const EventSearch = () => {
     const [filters, setFilters] = useState({
         search: '',
         category: 'All',
-        city: 'All Cities',
     });
 
     useEffect(() => {
@@ -61,16 +60,12 @@ const EventSearch = () => {
         const defaultFilters = {
             search: '',
             category: 'All',
-            city: 'All Cities',
         };
         setFilters(defaultFilters);
         fetchEvents(defaultFilters);
     };
 
-    const hasActiveFilters = filters.category !== 'All' || filters.city !== 'All Cities';
-
-    // Extract unique cities from all events
-    const eventCities = ['All Cities', ...new Set(allEvents.map(e => e.city).filter(Boolean))];
+    const hasActiveFilters = filters.category !== 'All';
 
     // Pagination
     const totalPages = Math.ceil(events.length / eventsPerPage);
@@ -124,19 +119,6 @@ const EventSearch = () => {
                                 )}
                             </div>
                             <div className="flex items-center gap-3">
-                                <select
-                                    value={filters.city}
-                                    onChange={(e) => {
-                                        handleFilterChange('city', e.target.value);
-                                        fetchEvents({ ...filters, city: e.target.value });
-                                    }}
-                                    className="input-field !py-2 text-sm !w-auto min-w-[160px]"
-                                    aria-label="Select city"
-                                >
-                                    {eventCities.map((city) => (
-                                        <option key={city} value={city}>{city}</option>
-                                    ))}
-                                </select>
                                 <div className="hidden sm:flex items-center bg-surface-100 rounded-lg p-0.5">
                                     <button
                                         onClick={() => setViewMode('grid')}
