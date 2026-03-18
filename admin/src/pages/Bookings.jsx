@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiTrash2 } from 'react-icons/fi';
 import api from '../services/api';
 
 export default function Bookings() {
@@ -15,6 +15,16 @@ export default function Bookings() {
             setBookings(res.data);
         } catch (err) { console.error(err); }
         setLoading(false);
+    };
+
+    const handleDelete = async (id) => {
+        if (!window.confirm('Are you sure you want to delete this booking? This action cannot be undone.')) return;
+        try {
+            await api.delete(`/admin/bookings/${id}`);
+            setBookings(prev => prev.filter(b => b._id !== id));
+        } catch (err) {
+            alert(err.response?.data?.message || 'Failed to delete booking');
+        }
     };
 
     const filtered = bookings.filter(b =>
@@ -52,6 +62,7 @@ export default function Bookings() {
                                 <th>Payment</th>
                                 <th>Status</th>
                                 <th>Date</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -66,10 +77,19 @@ export default function Bookings() {
                                     <td>{booking.paymentMethod}</td>
                                     <td><span className={`badge ${booking.status}`}>{booking.status}</span></td>
                                     <td>{new Date(booking.createdAt).toLocaleDateString()}</td>
+                                    <td>
+                                        <button
+                                            onClick={() => handleDelete(booking._id)}
+                                            title="Delete booking"
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', padding: '4px' }}
+                                        >
+                                            <FiTrash2 size={16} />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                             {filtered.length === 0 && (
-                                <tr><td colSpan={9} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No bookings found</td></tr>
+                                <tr><td colSpan={10} style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>No bookings found</td></tr>
                             )}
                         </tbody>
                     </table>

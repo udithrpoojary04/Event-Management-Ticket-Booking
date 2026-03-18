@@ -159,6 +159,31 @@ router.put('/bookings/:id/check-in', auth, adminOnly, async (req, res) => {
     }
 });
 
+// DELETE /api/admin/bookings/:id - Delete a booking
+router.delete('/bookings/:id', auth, adminOnly, async (req, res) => {
+    try {
+        const booking = await Booking.findByIdAndDelete(req.params.id);
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        // Restore ticket availability if not cancelled
+        if (booking.status !== 'cancelled') {
+            const event = await Event.findById(booking.event);
+            if (event) {
+                const ticket = event.tickets.find(t => t.type === booking.ticketType);
+                if (ticket) {
+                    ticket.available += booking.quantity;
+                    event.sold = Math.max(0, event.sold - booking.quantity);
+                    await event.save();
+                }
+            }
+        }
+
+        res.json({ message: 'Booking deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // GET /api/admin/reviews - List all reviews
 router.get('/reviews', auth, adminOnly, async (req, res) => {
     try {

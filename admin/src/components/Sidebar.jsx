@@ -6,7 +6,7 @@ const navItems = [
     { path: '/events', icon: FiCalendar, label: 'Events' },
     { path: '/users', icon: FiUsers, label: 'Users' },
     { path: '/bookings', icon: FiBookOpen, label: 'Bookings' },
-    { path: '/scanner', icon: FiCamera, label: 'Scanner' },
+    // { path: '/scanner', icon: FiCamera, label: 'Scanner' },
     { path: '/reviews', icon: FiStar, label: 'Reviews' },
     // { path: '/feedback', icon: FiMessageSquare, label: 'Feedback' },
 ];

@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const Event = require('../models/Event');
+const Booking = require('../models/Booking');
 const Review = require('../models/Review');
 const { auth, adminOnly } = require('../middleware/auth');
 
@@ -61,7 +62,22 @@ router.get('/', async (req, res) => {
         }
 
         const events = await Event.find(query).sort({ date: 1 });
-        res.json(events);
+
+        // Compute sold counts from actual bookings to avoid stale counter values
+        const soldCounts = await Booking.aggregate([
+            { $match: { status: { $ne: 'cancelled' } } },
+            { $group: { _id: '$event', sold: { $sum: '$quantity' } } },
+        ]);
+        const soldMap = {};
+        soldCounts.forEach(s => { soldMap[s._id.toString()] = s.sold; });
+
+        const result = events.map(e => {
+            const obj = e.toObject();
+            obj.sold = soldMap[e._id.toString()] ?? 0;
+            return obj;
+        });
+
+        res.json(result);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -85,28 +101,17 @@ router.get('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Fix stale data: if tickets available sum doesn't match totalCapacity - sold
-        if (event.tickets && event.tickets.length > 0) {
-            const ticketAvailableSum = event.tickets.reduce((sum, t) => sum + (t.available || 0), 0);
-            const expectedAvailable = event.totalCapacity - (event.sold || 0);
+        // Compute sold count from actual bookings to avoid stale counter
+        const soldResult = await Booking.aggregate([
+            { $match: { event: event._id, status: { $ne: 'cancelled' } } },
+            { $group: { _id: null, sold: { $sum: '$quantity' } } },
+        ]);
+        const actualSold = soldResult.length > 0 ? soldResult[0].sold : 0;
 
-            if (ticketAvailableSum !== expectedAvailable && expectedAvailable > 0) {
-                // Distribute remaining capacity across ticket types proportionally
-                if (event.tickets.length === 1) {
-                    event.tickets[0].available = expectedAvailable;
-                } else {
-                    // Distribute evenly, give remainder to the first ticket
-                    const perTicket = Math.floor(expectedAvailable / event.tickets.length);
-                    const remainder = expectedAvailable - (perTicket * event.tickets.length);
-                    event.tickets.forEach((t, i) => {
-                        t.available = perTicket + (i === 0 ? remainder : 0);
-                    });
-                }
-                await event.save();
-            }
-        }
+        const obj = event.toObject();
+        obj.sold = actualSold;
 
-        res.json(event);
+        res.json(obj);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

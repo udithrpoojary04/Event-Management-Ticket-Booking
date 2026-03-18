@@ -8,6 +8,7 @@ const emptyEvent = {
     tickets: [{ type: 'General', price: 0, available: 0 }],
     imageFile: null,
 };
+const today = new Date().toISOString().split('T')[0];
 
 export default function Events() {
     const [events, setEvents] = useState([]);
@@ -212,7 +213,7 @@ export default function Events() {
                                 </div>
                                 <div className="form-group">
                                     <label>End Date</label>
-                                    <input type="date" value={form.endDate} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+                                    <input type="date" value={form.endDate} min={today} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Time</label>
