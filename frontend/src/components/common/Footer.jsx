@@ -85,9 +85,9 @@ const Footer = () => {
                     <p className="text-sm text-surface-500">
                         © {currentYear} Eventify. All rights reserved.
                     </p>
-                    <p className="text-sm text-surface-500 flex items-center gap-1">
+                    {/* <p className="text-sm text-surface-500 flex items-center gap-1">
                         Made with <HiHeart className="w-4 h-4 text-red-500" /> for event lovers
-                    </p>
+                    </p> */}
                 </div>
             </div>
         </footer>
