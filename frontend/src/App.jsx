@@ -28,13 +28,13 @@ function App() {
         <ToastProvider>
           <ErrorBoundary>
             <Routes>
-              {/* Auth Layout */}
+              {/* Auth Layout  */}
               <Route element={<AuthLayout />}>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
               </Route>
 
-              {/* Main Layout */}
+              {/* Main Layout  */}
               <Route element={<MainLayout />}>
                 <Route path="/" element={<Home />} />
                 <Route path="/events" element={<EventSearch />} />
