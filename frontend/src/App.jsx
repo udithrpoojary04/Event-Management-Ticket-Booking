@@ -15,7 +15,7 @@ import EventDetail from './pages/public/EventDetail';
 import Login from './pages/public/Login';
 import Register from './pages/public/Register';
 
-// User Pages
+
 import BookingSummary from './pages/user/BookingSummary';
 import Payment from './pages/user/Payment';
 import Profile from './pages/user/Profile';
