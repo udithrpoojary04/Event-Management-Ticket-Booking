@@ -138,7 +138,7 @@ const EventDetail = () => {
 
     return (
         <div className="animate-fade-in">
-            {/* Hero Image */}
+            {/* Hero Image  */}
             <div className="relative h-64 sm:h-80 lg:h-[420px]">
                 <img src={resolveMediaUrl(event.image)} alt={event.title} className="w-full h-full object-cover" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
