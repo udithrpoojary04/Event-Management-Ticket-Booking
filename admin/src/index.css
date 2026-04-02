@@ -354,16 +354,42 @@ tbody tr:last-child td {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    background: linear-gradient(rgba(15, 23, 42, 0.7), rgba(30, 27, 75, 0.7)), url('./assets/login-bg.png');
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-page::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 60%);
+    animation: rotate 20s linear infinite;
+    z-index: 0;
+}
+
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 .login-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 40px;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 48px;
     width: 100%;
-    max-width: 420px;
+    max-width: 440px;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
 
 .login-card h1 {
@@ -373,14 +399,16 @@ tbody tr:last-child td {
     margin-bottom: 8px;
     background: linear-gradient(135deg, var(--accent), var(--accent-hover));
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
 .login-card p {
     text-align: center;
-    color: var(--text-secondary);
-    margin-bottom: 28px;
-    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 32px;
+    font-size: 15px;
+    font-weight: 400;
 }
 
 .login-card .form-group {
@@ -392,6 +420,28 @@ tbody tr:last-child td {
     padding: 12px;
     font-size: 15px;
     font-weight: 600;
+}
+
+.login-card .form-group label {
+    color: #cbd5e1;
+}
+
+.login-card .form-group input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f8fafc;
+    border-radius: 12px;
+    padding: 12px 16px;
+}
+
+.login-card .form-group input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--accent);
+    outline: none;
+}
+
+.login-card .form-group input::placeholder {
+    color: #64748b;
 }
 
 .error-msg {
