@@ -21,7 +21,7 @@ const Input = ({
             {label && (
                 <label
                     htmlFor={inputId}
-                    className="block text-sm font-semibold text-surface-700"
+                    className="block text-sm font-semibold text-white/90 mb-1"
                 >
                     {label}
                     {required && <span className="text-red-500 ml-1" aria-hidden="true">*</span>}

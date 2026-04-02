@@ -51,9 +51,11 @@ const Login = () => {
 
     return (
         <div>
-            <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-surface-900">Welcome Back</h1>
-                <p className="text-surface-500 mt-1">Sign in to your account</p>
+            <div className="text-center mb-10">
+                <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
+                    Welcome Back
+                </h1>
+                <p className="text-white/60 mt-2 font-medium">Sign in to your account</p>
             </div>
 
             {/* Demo credentials */}
@@ -92,11 +94,11 @@ const Login = () => {
                 />
 
                 <div className="flex items-center justify-between">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" className="w-4 h-4 rounded border-surface-300 text-primary-600 focus:ring-primary-500" />
-                        <span className="text-sm text-surface-600">Remember me</span>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <input type="checkbox" className="w-4 h-4 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-500/50" />
+                        <span className="text-sm text-white/70 group-hover:text-white transition-colors">Remember me</span>
                     </label>
-                    <a href="#" className="text-sm font-medium text-primary-600 hover:text-primary-700">
+                    <a href="#" className="text-sm font-semibold text-primary-400 hover:text-primary-300 transition-colors">
                         Forgot password?
                     </a>
                 </div>
@@ -106,9 +108,9 @@ const Login = () => {
                 </Button>
             </form>
 
-            <p className="text-center text-sm text-surface-500 mt-6">
+            <p className="text-center text-sm text-white/60 mt-8">
                 Don't have an account?{' '}
-                <Link to="/register" className="font-semibold text-primary-600 hover:text-primary-700">
+                <Link to="/register" className="font-bold text-primary-400 hover:text-primary-300 transition-colors">
                     Create one free
                 </Link>
             </p>

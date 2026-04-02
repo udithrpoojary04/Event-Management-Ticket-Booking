@@ -52,9 +52,11 @@ const Register = () => {
 
     return (
         <div>
-            <div className="text-center mb-8">
-                <h1 className="text-2xl font-bold text-surface-900">Create Account</h1>
-                <p className="text-surface-500 mt-1">Join thousands of event enthusiasts</p>
+            <div className="text-center mb-10">
+                <h1 className="text-3xl font-extrabold text-white tracking-tight drop-shadow-md">
+                    Create Account
+                </h1>
+                <p className="text-white/60 mt-2 font-medium">Join thousands of event enthusiasts</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -116,11 +118,11 @@ const Register = () => {
                     autoComplete="new-password"
                 />
 
-                <div className="flex items-start gap-2 pt-1">
-                    <input type="checkbox" id="terms" className="w-4 h-4 mt-0.5 rounded border-surface-300 text-primary-600 focus:ring-primary-500" required />
-                    <label htmlFor="terms" className="text-sm text-surface-500">
-                        I agree to the <a href="#" className="text-primary-600 hover:underline">Terms of Service</a> and{' '}
-                        <a href="#" className="text-primary-600 hover:underline">Privacy Policy</a>
+                <div className="flex items-start gap-2 pt-2">
+                    <input type="checkbox" id="terms" className="w-5 h-5 mt-0.5 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-500/50" required />
+                    <label htmlFor="terms" className="text-sm text-white/70 leading-relaxed">
+                        I agree to the <a href="#" className="font-bold text-primary-400 hover:text-primary-300">Terms</a> and{' '}
+                        <a href="#" className="font-bold text-primary-400 hover:text-primary-300">Privacy Policy</a>
                     </label>
                 </div>
 
@@ -129,9 +131,9 @@ const Register = () => {
                 </Button>
             </form>
 
-            <p className="text-center text-sm text-surface-500 mt-6">
+            <p className="text-center text-sm text-white/60 mt-8">
                 Already have an account?{' '}
-                <Link to="/login" className="font-semibold text-primary-600 hover:text-primary-700">
+                <Link to="/login" className="font-bold text-primary-400 hover:text-primary-300 transition-colors">
                     Sign in
                 </Link>
             </p>
