@@ -103,7 +103,13 @@ const EventDetail = () => {
         }
     };
 
+    const isPast = event ? new Date(`${event.date}T${event.time}`) < new Date() : false;
+
     const handleBookNow = () => {
+        if (isPast) {
+            toast.error('Booking is no longer available for this event.');
+            return;
+        }
         if (!isAuthenticated) {
             toast.warning('Please sign in to book tickets');
             navigate('/login', { state: { from: `/events/${id}` } });
@@ -479,9 +485,11 @@ const EventDetail = () => {
                                 onClick={handleBookNow}
                                 className="w-full mt-4"
                                 size="lg"
-                                icon={HiTicket}
+                                icon={isPast ? HiCheckCircle : HiTicket}
+                                disabled={isPast || !selectedTicket || selectedTicket.available === 0}
+                                variant={isPast ? 'secondary' : 'primary'}
                             >
-                                Book Now
+                                {isPast ? 'Event Ended' : selectedTicket?.available === 0 ? 'Sold Out' : 'Book Now'}
                             </Button>
 
                             <p className="text-xs text-center text-surface-400 mt-4">

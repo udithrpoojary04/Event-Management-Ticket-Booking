@@ -50,6 +50,12 @@ router.post('/', auth, async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
+        // Prevent booking if event date has passed
+        const eventDateTime = new Date(`${event.date}T${event.time}`);
+        if (eventDateTime < new Date()) {
+            return res.status(400).json({ message: 'Event has already passed. Booking is no longer allowed.' });
+        }
+
         // Check ticket availability
         const ticket = event.tickets.find(t => t.type === ticketType);
         if (!ticket || ticket.available < quantity) {
