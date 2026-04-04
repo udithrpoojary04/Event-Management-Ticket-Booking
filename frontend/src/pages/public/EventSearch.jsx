@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getEvents, categories } from '../../services/events';
+import { isEventPast } from '../../utils/eventStatus';
 import EventCard from '../../components/cards/EventCard';
 import Input from '../../components/ui/Input';
 import Pagination from '../../components/common/Pagination';
@@ -36,8 +37,9 @@ const EventSearch = () => {
         setLoading(true);
         try {
             const res = await getEvents(customFilters);
-            setEvents(res.data);
-            if (allEvents.length === 0) setAllEvents(res.data);
+            const upcoming = res.data.filter(e => !isEventPast(e));
+            setEvents(upcoming);
+            if (allEvents.length === 0) setAllEvents(upcoming);
             setCurrentPage(1);
         } catch (err) {
             console.error(err);

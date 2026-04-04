@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getFeaturedEvents, getEvents, categories } from '../../services/events';
 import { resolveMediaUrl } from '../../utils/media';
+import { isEventPast } from '../../utils/eventStatus';
 import EventCard from '../../components/cards/EventCard';
 import Button from '../../components/ui/Button';
 import {
@@ -33,8 +34,8 @@ const Home = () => {
                     getFeaturedEvents(),
                     getEvents(),
                 ]);
-                setFeaturedEvents(featuredRes.data);
-                setAllEvents(allRes.data);
+                setFeaturedEvents(featuredRes.data.filter(e => !isEventPast(e)));
+                setAllEvents(allRes.data.filter(e => !isEventPast(e)));
             } catch (err) {
                 console.error('Error loading events:', err);
             } finally {
@@ -58,7 +59,7 @@ const Home = () => {
         setLoading(true);
         try {
             const res = await getEvents(category !== 'All' ? { category } : {});
-            setAllEvents(res.data);
+            setAllEvents(res.data.filter(e => !isEventPast(e)));
         } catch (err) {
             console.error(err);
         } finally {
