@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import { formatDate, formatTime, formatCurrency } from '../../utils/formatters';
 import { resolveMediaUrl } from '../../utils/media';
+import { isEventPast } from '../../utils/eventStatus';
 import Button from '../../components/ui/Button';
 import {
     HiCalendar,
@@ -103,7 +104,7 @@ const EventDetail = () => {
         }
     };
 
-    const isPast = event ? new Date(`${event.date}T${event.time}`) < new Date() : false;
+    const isPast = isEventPast(event);
 
     const handleBookNow = () => {
         if (isPast) {
@@ -197,6 +198,17 @@ const EventDetail = () => {
             </div>
 
             <div className="page-container py-10">
+                {isPast && (
+                    <div className="mb-8 p-4 bg-surface-50 border border-surface-200 rounded-2xl flex items-center gap-3 animate-fade-in shadow-sm">
+                        <div className="w-10 h-10 rounded-full bg-surface-200 flex items-center justify-center text-surface-500">
+                            <HiCheckCircle className="w-6 h-6" />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-surface-900">Event Completed</h3>
+                            <p className="text-sm text-surface-500 text-pretty">This event has already taken place. Booking is no longer available.</p>
+                        </div>
+                    </div>
+                )}
                 <div className="flex flex-col lg:flex-row gap-10">
                     {/* Left - Details */}
                     <div className="flex-1">

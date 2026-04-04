@@ -157,6 +157,7 @@ export default function Events() {
                                 <th>Date</th>
                                 <th>Capacity</th>
                                 <th>Sold</th>
+                                <th>Status</th>
                                 <th>Featured</th>
                                 <th>Actions</th>
                             </tr>
@@ -172,6 +173,13 @@ export default function Events() {
                                     <td>{event.date}</td>
                                     <td>{event.totalCapacity?.toLocaleString()}</td>
                                     <td>{event.sold?.toLocaleString()}</td>
+                                    <td>
+                                        {new Date(`${event.endDate || event.date}T${event.time || '23:59'}`) < new Date() ? (
+                                            <span style={{ padding: '4px 8px', borderRadius: 4, background: '#f1f5f9', color: '#64748b', fontSize: 11, fontWeight: 600 }}>Completed</span>
+                                        ) : (
+                                            <span style={{ padding: '4px 8px', borderRadius: 4, background: '#ecfdf5', color: '#059669', fontSize: 11, fontWeight: 600 }}>Upcoming</span>
+                                        )}
+                                    </td>
                                     <td>{event.featured ? '⭐' : '—'}</td>
                                     <td>
                                         <button className="btn-icon" onClick={() => handleEdit(event)}><FiEdit2 /></button>

@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom';
 import { HiCalendar, HiMapPin, HiTicket, HiStar } from 'react-icons/hi2';
 import { formatDateShort, formatCurrency } from '../../utils/formatters';
 import { resolveMediaUrl } from '../../utils/media';
+import { isEventPast } from '../../utils/eventStatus';
 
 const EventCard = ({ event, className = '' }) => {
     const eventId = event?._id || event?.id;
@@ -19,6 +20,8 @@ const EventCard = ({ event, className = '' }) => {
         ? Math.min(100, Math.max(0, Math.round((sold / totalCapacity) * 100)))
         : 0;
 
+    const isPast = isEventPast(event);
+
     const locationText = event?.location || event?.venue || 'Location TBA';
 
     return (
@@ -32,10 +35,19 @@ const EventCard = ({ event, className = '' }) => {
                 <img
                     src={resolveMediaUrl(event.image)}
                     alt={event.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${isPast ? 'grayscale-[0.5] opacity-75' : ''}`}
                     loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+
+                {/* Status Badge */}
+                {isPast && (
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <span className="bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full text-white text-xs font-bold uppercase tracking-widest border border-white/20 shadow-xl">
+                            Event Completed
+                        </span>
+                    </div>
+                )}
 
                 {/* Category Badge */}
                 <span className="absolute top-3 left-3 badge-primary text-xs backdrop-blur-sm bg-primary-500/90 text-white">
