@@ -15,6 +15,7 @@ const Register = () => {
     const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', confirmPassword: '' });
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -119,14 +120,27 @@ const Register = () => {
                 />
 
                 <div className="flex items-start gap-2 pt-2">
-                    <input type="checkbox" id="terms" className="w-5 h-5 mt-0.5 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-500/50" required />
+                    <input
+                        type="checkbox"
+                        id="terms"
+                        className="w-5 h-5 mt-0.5 rounded border-white/20 bg-white/10 text-primary-500 focus:ring-primary-500/50"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                        required
+                    />
                     <label htmlFor="terms" className="text-sm text-white/70 leading-relaxed">
                         I agree to the <a href="#" className="font-bold text-primary-400 hover:text-primary-300">Terms</a> and{' '}
                         <a href="#" className="font-bold text-primary-400 hover:text-primary-300">Privacy Policy</a>
                     </label>
                 </div>
 
-                <Button type="submit" className="w-full" size="lg" loading={loading}>
+                <Button
+                    type="submit"
+                    className="w-full"
+                    size="lg"
+                    loading={loading}
+                    disabled={!acceptedTerms}
+                >
                     Create Account
                 </Button>
             </form>
