@@ -9,6 +9,9 @@ const emptyEvent = {
     imageFile: null,
 };
 const today = new Date().toISOString().split('T')[0];
+const tomorrowDate = new Date();
+tomorrowDate.setDate(tomorrowDate.getDate() + 1);
+const tomorrow = tomorrowDate.toISOString().split('T')[0];
 
 export default function Events() {
     const [events, setEvents] = useState([]);
@@ -217,11 +220,11 @@ export default function Events() {
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
                                 <div className="form-group">
                                     <label>Date</label>
-                                    <input type="date" value={form.date} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
+                                    <input type="date" value={form.date} min={tomorrow} onChange={e => setForm(f => ({ ...f, date: e.target.value }))} required />
                                 </div>
                                 <div className="form-group">
                                     <label>End Date</label>
-                                    <input type="date" value={form.endDate} min={today} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
+                                    <input type="date" value={form.endDate} min={form.date || tomorrow} onChange={e => setForm(f => ({ ...f, endDate: e.target.value }))} />
                                 </div>
                                 <div className="form-group">
                                     <label>Time</label>
